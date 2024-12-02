@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Database</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <h1>Welcome to the Movie Database Management</h1>
+    
+    <h2>Generate Data</h2>
+    <button id="generateGenresButton">Generate Genres</button>
+    <button id="generateDirectorsButton">Generate Directors</button>
+    <button id="generateActorsButton">Generate Actors</button>
+
+    <h2>Add Movies</h2>
+    <form id="addMoviesForm">
+        <label>Number of Movies:</label>
+        <input type="number" id="num_movies" name="num_movies" min="1" required>
+        <button type="submit">Add Movies</button>
+    </form>
+
+    <h2>Search Movies</h2>
+    <form id="searchByYearForm">
+        <label>Year:</label>
+        <input type="number" id="search_year" required>
+        <input type="checkbox" id="expensive_query" value="1"> Use Expensive Query
+        <button type="submit">Search by Year</button>
+    </form>
+    <form id="searchByYearRangeForm">
+        <label>Start Year:</label>
+        <input type="number" id="start_year" required>
+        <label>End Year:</label>
+        <input type="number" id="end_year" required>
+        <input type="checkbox" id="expensive_query_range" value="1"> Use Expensive Query
+        <button type="submit">Search by Year Range</button>
+    </form>
+
+    <h2>Index Management</h2>
+    <button id="addIndexButton">Add Index</button>
+
+    <h2>Database Stats</h2>
+    <button id="countMoviesButton">Count Movies</button>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('generateGenresButton').onclick = function() {
+            fetch('/generate_genres', { method: 'POST' }).then(response => response.text()).then(alert);
+        };
+
+        document.getElementById('generateDirectorsButton').onclick = function() {
+            fetch('/generate_directors', { method: 'POST' }).then(response => response.text()).then(alert);
+        };
+
+        document.getElementById('generateActorsButton').onclick = function() {
+            fetch('/generate_actors', { method: 'POST' }).then(response => response.text()).then(alert);
+        };
+
+        document.getElementById('addMoviesForm').onsubmit = function(event) {
+            event.preventDefault();
+            const numMovies = document.getElementById('num_movies').value;
+            fetch('/populate_movies', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `num_movies=${numMovies}`
+            }).then(response => response.text()).then(alert);
+        };
+
+        document.getElementById('searchByYearForm').onsubmit = function(event) {
+            event.preventDefault();
+            const year = document.getElementById('search_year').value;
+            const expensive = document.getElementById('expensive_query').checked ? 1 : 0;
+            fetch(`/search_by_year?year=${year}&expensive=${expensive}`).then(response => response.json()).then(data => {
+                alert(`Movies Found: ${data.count}, Execution Time: ${data.execution_time.toFixed(2)} seconds`);
+            });
+        };
+
+        document.getElementById('searchByYearRangeForm').onsubmit = function(event) {
+            event.preventDefault();
+            const startYear = document.getElementById('start_year').value;
+            const endYear = document.getElementById('end_year').value;
+            const expensive = document.getElementById('expensive_query_range').checked ? 1 : 0;
+            fetch(`/search_by_year_range?start_year=${startYear}&end_year=${endYear}&expensive=${expensive}`).then(response => response.json()).then(data => {
+                alert(`Movies Found: ${data.count}, Execution Time: ${data.execution_time.toFixed(2)} seconds`);
+            });
+        };
+
+        document.getElementById('addIndexButton').onclick = function() {
+            fetch('/add_index', { method: 'POST' }).then(response => response.text()).then(alert);
+        };
+
+        document.getElementById('countMoviesButton').onclick = function() {
+            fetch('/count_movies').then(response => response.json()).then(data => {
+                document.getElementById('results').textContent = `Total Movies: ${data.movie_count}`;
+            });
+        };
+    </script>
+</body>
+</html>
